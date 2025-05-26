@@ -44,42 +44,30 @@
       'NL West': []
     };
 
-    const divisionIds = {
-      'AL East': 201,
-      'AL Central': 202,
-      'AL West': 200,
-      'NL East': 204,
-      'NL Central': 205,
-      'NL West': 203
-    };
-
-    const divisionNames = {
-      200: 'AL West',
-      201: 'AL East',
-      202: 'AL Central',
-      203: 'NL West',
-      204: 'NL East',
-      205: 'NL Central'
-    };
-
     function fetchStandings() {
-      fetch('https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2024&standingsTypes=regularSeason')
+      fetch('https://corsproxy.io/?https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2024&standingsTypes=regularSeason')
         .then(res => res.json())
         .then(data => {
           const records = data.records;
           records.forEach(record => {
             const divisionName = record.division.name;
-            record.teamRecords.forEach(team => {
-              divisions[divisionName].push({
-                name: team.team.name,
-                wins: team.wins,
-                losses: team.losses,
-                pct: team.winningPercentage,
-                gb: team.gamesBack
+            if (divisions[divisionName]) {
+              record.teamRecords.forEach(team => {
+                divisions[divisionName].push({
+                  name: team.team.name,
+                  wins: team.wins,
+                  losses: team.losses,
+                  pct: team.winningPercentage,
+                  gb: team.gamesBack
+                });
               });
-            });
+            }
           });
           displayDivisions();
+        })
+        .catch(err => {
+          document.getElementById('standings').innerHTML = `<p>Error loading standings: ${err}</p>`;
+          console.error(err);
         });
     }
 
