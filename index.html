@@ -2,27 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MLB Weekly Standings by Division</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f8f8f8;
+      padding: 40px;
+      background: #f9f9f9;
+      color: #222;
     }
-    h1, h2 {
+    h1 {
       text-align: center;
+      font-size: 2em;
+      margin-bottom: 30px;
     }
-    .division {
-      margin-bottom: 40px;
+    h2 {
+      margin-top: 40px;
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #fff;
+      margin-top: 10px;
+      margin-bottom: 20px;
     }
     th, td {
+      padding: 10px;
       border: 1px solid #ccc;
-      padding: 8px;
       text-align: center;
     }
     th {
@@ -34,81 +41,83 @@
   <h1>MLB Weekly Standings by Division</h1>
   <div id="standings"></div>
 
-<script>
-  const divisions = {
-    'AL East': [],
-    'AL Central': [],
-    'AL West': [],
-    'NL East': [],
-    'NL Central': [],
-    'NL West': []
-  };
+  <script>
+    const divisions = {
+      'AL East': [],
+      'AL Central': [],
+      'AL West': [],
+      'NL East': [],
+      'NL Central': [],
+      'NL West': []
+    };
 
-  function fetchStandings() {
-    const url = 'https://corsproxy.io/?https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2024&standingsTypes=regularSeason';
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        console.log('Fetched Data:', data); // 👈 Add this line
-        const records = data.records || [];
-        records.forEach(record => {
-          const divisionName = record.division.name;
-          if (divisions[divisionName]) {
-            record.teamRecords.forEach(team => {
-              divisions[divisionName].push({
-                name: team.team.name,
-                wins: team.wins,
-                losses: team.losses,
-                pct: team.winningPercentage,
-                gb: team.gamesBack
+    function fetchStandings() {
+      const url = 'https://corsproxy.io/?https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2024&standingsTypes=regularSeason';
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          console.log('Fetched Data:', data); // Debug log
+          const records = data.records || [];
+          records.forEach(record => {
+            const divisionName = record.division.name;
+            if (divisions[divisionName]) {
+              record.teamRecords.forEach(team => {
+                divisions[divisionName].push({
+                  name: team.team.name,
+                  wins: team.wins,
+                  losses: team.losses,
+                  pct: team.winningPercentage,
+                  gb: team.gamesBack
+                });
               });
-            });
-          }
+            }
+          });
+          displayDivisions();
+        })
+        .catch(err => {
+          document.getElementById('standings').innerHTML = `<p>Error loading standings: ${err}</p>`;
+          console.error(err); // Show error in console
         });
-        displayDivisions();
-      })
-      .catch(err => {
-        document.getElementById('standings').innerHTML = `<p>Error loading standings: ${err}</p>`;
-        console.error(err); // 👈 See if an error logs here
-      });
-  }
+    }
 
-  function displayDivisions() {
-    const container = document.getElementById('standings');
-    container.innerHTML = ''; // Clear old content
-    Object.keys(divisions).forEach(division => {
-      const div = document.createElement('div');
-      div.className = 'division';
-      const heading = document.createElement('h2');
-      heading.textContent = division;
-      div.appendChild(heading);
+    function displayDivisions() {
+      const container = document.getElementById('standings');
+      container.innerHTML = ''; // Clear content
+      Object.keys(divisions).forEach(division => {
+        const div = document.createElement('div');
+        const heading = document.createElement('h2');
+        heading.textContent = division;
+        div.appendChild(heading);
 
-      const table = document.createElement('table');
-      table.innerHTML = `
-        <tr>
-          <th>Team</th>
-          <th>Wins</th>
-          <th>Losses</th>
-          <th>Win %</th>
-          <th>Games Back</th>
-        </tr>
-      `;
-      divisions[division].forEach(team => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${team.name}</td>
-          <td>${team.wins}</td>
-          <td>${team.losses}</td>
-          <td>${team.pct}</td>
-          <td>${team.gb}</td>
+        const table = document.createElement('table');
+        table.innerHTML = `
+          <tr>
+            <th>Team</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Win %</th>
+            <th>Games Back</th>
+          </tr>
         `;
-        table.appendChild(row);
+        divisions[division].forEach(team => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${team.name}</td>
+            <td>${team.wins}</td>
+            <td>${team.losses}</td>
+            <td>${team.pct}</td>
+            <td>${team.gb}</td>
+          `;
+          table.appendChild(row);
+        });
+
+        div.appendChild(table);
+        container.appendChild(div);
       });
+    }
 
-      div.appendChild(table);
-      container.appendChild(div);
-    });
-  }
-
-  fetchStandings();
-</script>
+    fetchStandings();
+  </script>
+</body>
+</html>
