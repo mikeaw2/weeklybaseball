@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MLB Weekly Standings by Division</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f8f8f8;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .division {
+      margin-bottom: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>MLB Weekly Standings by Division</h1>
+  <div id="standings"></div>
+
+  <script>
+    const divisions = {
+      'AL East': [],
+      'AL Central': [],
+      'AL West': [],
+      'NL East': [],
+      'NL Central': [],
+      'NL West': []
+    };
+
+    const divisionIds = {
+      'AL East': 201,
+      'AL Central': 202,
+      'AL West': 200,
+      'NL East': 204,
+      'NL Central': 205,
+      'NL West': 203
+    };
+
+    const divisionNames = {
+      200: 'AL West',
+      201: 'AL East',
+      202: 'AL Central',
+      203: 'NL West',
+      204: 'NL East',
+      205: 'NL Central'
+    };
+
+    function fetchStandings() {
+      fetch('https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2024&standingsTypes=regularSeason')
+        .then(res => res.json())
+        .then(data => {
+          const records = data.records;
+          records.forEach(record => {
+            const divisionName = record.division.name;
+            record.teamRecords.forEach(team => {
+              divisions[divisionName].push({
+                name: team.team.name,
+                wins: team.wins,
+                losses: team.losses,
+                pct: team.winningPercentage,
+                gb: team.gamesBack
+              });
+            });
+          });
+          displayDivisions();
+        });
+    }
+
+    function displayDivisions() {
+      const container = document.getElementById('standings');
+      Object.keys(divisions).forEach(division => {
+        const div = document.createElement('div');
+        div.className = 'division';
+        const heading = document.createElement('h2');
+        heading.textContent = division;
+        div.appendChild(heading);
+
+        const table = document.createElement('table');
+        table.innerHTML = `
+          <tr>
+            <th>Team</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Win %</th>
+            <th>Games Back</th>
+          </tr>
+        `;
+        divisions[division].forEach(team => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${team.name}</td>
+            <td>${team.wins}</td>
+            <td>${team.losses}</td>
+            <td>${team.pct}</td>
+            <td>${team.gb}</td>
+          `;
+          table.appendChild(row);
+        });
+
+        div.appendChild(table);
+        container.appendChild(div);
+      });
+    }
+
+    fetchStandings();
+  </script>
+</body>
+</html>
