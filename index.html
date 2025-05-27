@@ -2,36 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MLB Weekly Standings by Division</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 40px;
-      background: #f9f9f9;
-      color: #222;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 20px;
     }
-    h1 {
+
+    h1, h2 {
       text-align: center;
-      font-size: 2em;
-      margin-bottom: 30px;
     }
-    h2 {
-      margin-top: 40px;
-      border-bottom: 2px solid #444;
-      padding-bottom: 5px;
+
+    .division {
+      margin-bottom: 40px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      margin-bottom: 20px;
     }
+
     th, td {
-      padding: 10px;
       border: 1px solid #ccc;
+      padding: 10px;
       text-align: center;
     }
+
     th {
       background-color: #eee;
     }
@@ -42,56 +42,47 @@
   <div id="standings"></div>
 
   <script>
-    const divisions = {
-      'AL East': [],
-      'AL Central': [],
-      'AL West': [],
-      'NL East': [],
-      'NL Central': [],
-      'NL West': []
+    const data = {
+      "AL East": [
+        { team: "Yankees", wins: 30, losses: 20, pct: ".600", gb: "—" },
+        { team: "Orioles", wins: 28, losses: 22, pct: ".560", gb: "2.0" },
+        { team: "Red Sox", wins: 25, losses: 25, pct: ".500", gb: "5.0" }
+      ],
+      "AL Central": [
+        { team: "Guardians", wins: 31, losses: 19, pct: ".620", gb: "—" },
+        { team: "Twins", wins: 29, losses: 21, pct: ".580", gb: "2.0" }
+      ],
+      "AL West": [
+        { team: "Rangers", wins: 27, losses: 23, pct: ".540", gb: "—" },
+        { team: "Astros", wins: 26, losses: 24, pct: ".520", gb: "1.0" }
+      ],
+      "NL East": [
+        { team: "Braves", wins: 32, losses: 18, pct: ".640", gb: "—" },
+        { team: "Phillies", wins: 30, losses: 20, pct: ".600", gb: "2.0" }
+      ],
+      "NL Central": [
+        { team: "Cubs", wins: 28, losses: 22, pct: ".560", gb: "—" },
+        { team: "Cardinals", wins: 26, losses: 24, pct: ".520", gb: "2.0" }
+      ],
+      "NL West": [
+        { team: "Dodgers", wins: 35, losses: 15, pct: ".700", gb: "—" },
+        { team: "Giants", wins: 27, losses: 23, pct: ".540", gb: "8.0" }
+      ]
     };
 
-    function fetchStandings() {
-      const url = 'https://corsproxy.io/?https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2024&standingsTypes=regularSeason';
+    function renderStandings() {
+      const container = document.getElementById("standings");
+      for (const [division, teams] of Object.entries(data)) {
+        const div = document.createElement("div");
+        div.className = "division";
 
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          console.log('Fetched Data:', data); // Debug log
-          const records = data.records || [];
-          records.forEach(record => {
-            const divisionName = record.division.name;
-            if (divisions[divisionName]) {
-              record.teamRecords.forEach(team => {
-                divisions[divisionName].push({
-                  name: team.team.name,
-                  wins: team.wins,
-                  losses: team.losses,
-                  pct: team.winningPercentage,
-                  gb: team.gamesBack
-                });
-              });
-            }
-          });
-          displayDivisions();
-        })
-        .catch(err => {
-          document.getElementById('standings').innerHTML = `<p>Error loading standings: ${err}</p>`;
-          console.error(err); // Show error in console
-        });
-    }
+        const title = document.createElement("h2");
+        title.textContent = division;
+        div.appendChild(title);
 
-    function displayDivisions() {
-      const container = document.getElementById('standings');
-      container.innerHTML = ''; // Clear content
-      Object.keys(divisions).forEach(division => {
-        const div = document.createElement('div');
-        const heading = document.createElement('h2');
-        heading.textContent = division;
-        div.appendChild(heading);
-
-        const table = document.createElement('table');
-        table.innerHTML = `
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        thead.innerHTML = `
           <tr>
             <th>Team</th>
             <th>Wins</th>
@@ -100,24 +91,28 @@
             <th>Games Back</th>
           </tr>
         `;
-        divisions[division].forEach(team => {
-          const row = document.createElement('tr');
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        teams.forEach(team => {
+          const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${team.name}</td>
+            <td>${team.team}</td>
             <td>${team.wins}</td>
             <td>${team.losses}</td>
             <td>${team.pct}</td>
             <td>${team.gb}</td>
           `;
-          table.appendChild(row);
+          tbody.appendChild(row);
         });
-
+        table.appendChild(tbody);
         div.appendChild(table);
         container.appendChild(div);
-      });
+      }
     }
 
-    fetchStandings();
+    // Show the data immediately
+    renderStandings();
   </script>
 </body>
 </html>
